@@ -1,0 +1,31 @@
+.container {
+    display: flex;
+    justify-content: space-around;
+}
+
+.box {
+    width: 200px;
+    height: 200px
+}
+.leyenda {
+    font-weight: bold;
+}
+
+span {
+    font-weight: bold;
+    font-size: 20px;
+    color: red;
+}
+
+#box1 {
+    background-color: blue;
+}
+#box2 {
+    background-color: brown;
+}
+#box3 {
+    background-color: chartreuse;
+}
+#box4 {
+    background-color: crimson;
+}
