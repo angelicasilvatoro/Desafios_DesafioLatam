@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de monedas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body class="bg-black">
+    <div class="border border-white container bg-black p-3 mt-4">
+        <h1 style="text-align: center; color: white;" >Conversor de monedas Nacional</h1>
+    </div>
+    <div class="container de-flex justify-content-center bg-black">
+        <div class="card m-3 jus " style="background-color:gray;">
+            <div class="card-body">
+                <h1 class="card-title text-center text-white">Pesos CLP</h1>
+                <div class="mb-3">
+                    <input type="number" id="montoAConvertir" class="form-control" placeholder="Ingresa el monto a convertir en clp">
+                </div>
+                <h3 class="text-center text-white">Moneda a convertir:</h3>
+                <div class="mb-3">
+                    <select id="selectDivisa" class="form-control">
+                        <option value="" selected disabled>Seleccione moneda</option>
+                    </select>
+                </div>
+                <a id="convertirDivisa" class="text-center btn btn-primary ">Convertir</a>
+                <h2 id="resultado" class="text-center">...</h2>
+                <div id="chartContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script> 
+
+    <script>
+
+    const arrayDivisas = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc", "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
+
+    const SelectDivisas = document.getElementById("selectDivisa")
+    const TextResultado = document.getElementById("resultado")
+    const buttonConvert = document.getElementById("convertirDivisa")
+    const InputConvertir = document.getElementById("montoAConvertir")
+    const chartContainer = document.getElementById("chartContainer")
+
+    function createChart(dataObjt) {
+        chartContainer.innerHTML = '<canvas id="chart"></canvas>'
+        canvas = document.getElementById("chart")
+
+        const data = {
+            type: "line",
+            data: {
+                labels: dataObjt.dates,
+                datasets:[
+                    {
+                        label: 'ultimos 10 dias',
+                        data: dataObjt.data,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension:0.1
+
+                    }
+
+                    
+                ]
+                
+        }
+
+    }
+    new Chart(canvas,data)
+    }
+
+    async function convertMoney(){
+        try {
+         
+            divisa = SelectDivisas.value
+            result = await fetch(`https://www.mindicador.cl/api/${divisa}`)
+            resultJson = await result.json()
+            console.log(resultJson)
+            divisaCLP= resultJson.serie[0].valor
+            convertCLP = +InputConvertir.value
+
+            console.log(divisaCLP,convertCLP)
+
+            TextResultado.innerText = (convertCLP/divisaCLP).toFixed(2)
+
+            const lastDays = {}
+
+            lastDays.data = resultJson.serie.slice(0,10).map(val => val.valor).reverse()
+            lastDays.dates = resultJson.serie.slice(0,10).map(val => dayjs(val.fecha).format('YYYY-MM-DD')).reverse()
+            createChart(lastDays)
+            console.log(lastDays)
+
+        } catch (error) {
+            
+        }
+    }
+
+    selectHTML = SelectDivisas.innerHTML
+
+    arrayDivisas.forEach(val => selectHTML += `
+        <option value=${val}>${val}</option>
+    `)
+
+    SelectDivisas.innerHTML = selectHTML
+
+    buttonConvert.addEventListener('click',convertMoney)
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+</html>
